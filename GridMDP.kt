@@ -4,7 +4,7 @@ fun main(args: Array<String>)
     val grid = GridMDP(4,3)
     grid.block(2,2)
 
-    grid.setRewardFunction { x, y ->
+    grid.rewardFunction = { x, y ->
         when(Pair(x,y))
         {
             Pair(4,3) -> 1.0
@@ -26,18 +26,13 @@ fun main(args: Array<String>)
 class GridMDP(val columns: Int, val rows: Int)
 {
     private val blocked: MutableList<Pair<Int, Int>> = mutableListOf()
-    private var rewardFunction: (Int, Int) -> Double = {_, _ -> 0.0}
+    var rewardFunction: (Int, Int) -> Double = {_, _ -> 0.0}
 
     fun getAgent(): Agent = Agent(this)
 
     fun block(x: Int, y: Int)
     {
         blocked.add(Pair(x,y))
-    }
-
-    fun setRewardFunction(newFun: (Int, Int) -> Double)
-    {
-        rewardFunction = newFun
     }
 
     private fun checkXY(newX: Int, newY: Int): Boolean = when {
@@ -49,19 +44,11 @@ class GridMDP(val columns: Int, val rows: Int)
 
     fun determineUtilities(gamma: Double, baseReward: Double): Array<Array<Double>>
     {
-        val utilities: Array<Array<Double>> = Array(columns) {
-            _ -> Array(rows) {
-                _ -> baseReward
-            }
-        }
+        val utilities: Array<Array<Double>> = Array(columns) { Array(rows) { baseReward } }
 
-        val doIterations: (Int, () -> Unit) -> Unit = { i, chunk ->
-            for (iter in 1..i) {
-                chunk.invoke()
-            }
-        }
+        fun doIterations(i: Int, chunk: () -> Unit) = (1..i).forEach { chunk() }
 
-        val forEachSquare: ((Int, Int) -> Unit) -> Unit = { chunk ->
+        fun forEachSquare(chunk: (Int, Int) -> Unit) {
             for (x in 1..columns)
             {
                 for(y in 1..rows)
@@ -71,8 +58,7 @@ class GridMDP(val columns: Int, val rows: Int)
             }
         }
 
-        val maxNeighborUtility: (Int, Int) -> Double = { x, y ->
-
+        fun maxNeighborUtility(x: Int, y: Int): Double {
             val options: MutableList<Double> = mutableListOf()
 
             if (checkXY(x,y+1)) options.add(utilities[x][y+1])
@@ -80,7 +66,7 @@ class GridMDP(val columns: Int, val rows: Int)
             if (checkXY(x,y-1)) options.add(utilities[x][y-1])
             if (checkXY(x-1,y)) options.add(utilities[x-1][y])
 
-            options.sorted().first()
+            return options.sorted().first()
         }
 
         doIterations(10)
