@@ -129,7 +129,7 @@ class RunningMDP(private val mdp: MDP, private var currentState: State)
         }
     }
 
-    private fun takeAction(action: Action)
+    private fun takeAction(action: MDPAction)
     {
         val actions = action.consequences.entries.toList()
         val probCDF: MutableList<Double> = mutableListOf(actions.first().value)
@@ -152,7 +152,7 @@ class RunningMDP(private val mdp: MDP, private var currentState: State)
 class MDP(private val startState: String)
 {
     val states: MutableMap<String, State> = mutableMapOf()
-    val actions: MutableMap<String, Action> = mutableMapOf()
+    val actions: MutableMap<String, MDPAction> = mutableMapOf()
 
     fun state(name: String, pnts: Double = 0.0, init: State.() -> Unit)
     {
@@ -161,9 +161,9 @@ class MDP(private val startState: String)
         states[name] = newState
     }
 
-    fun action(name: String, init: Action.() -> Unit)
+    fun action(name: String, init: MDPAction.() -> Unit)
     {
-        val newAction = Action(name)
+        val newAction = MDPAction(name)
         newAction.init()
         actions[name] = newAction
     }
@@ -180,7 +180,7 @@ class State(val name: String, val points: Double = 0.0)
         actions.add(this)
     }
 }
-class Action(val name: String)
+class MDPAction(val name: String)
 {
     val consequences: MutableMap<String, Double> = mutableMapOf()
 
