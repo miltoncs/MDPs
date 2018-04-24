@@ -148,8 +148,8 @@ class GridMDP(val columns: Int, val rows: Int)
 
         operator fun plus(n: Int): Action = when
         {
-            n > 0 -> this.next() + 1
-            n < 0 -> this.prev() - 1
+            n > 0 -> this.next() + (n-1)
+            n < 0 -> this.prev() - (n+1)
             else -> this // assuming n == 0
         }
 
